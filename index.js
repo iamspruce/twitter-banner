@@ -28,8 +28,8 @@ async function get_followers() {
       );
       const follower_avatar = {
         input: `${follower.screen_name}-${index}.png`,
-        top: 675,
-        left: parseInt(`${1220 + 120 * index}`),
+        top: 380,
+        left: parseInt(`${1050 + 120 * index}`),
       };
       followers_info.push(follower_avatar);
       resolve();
@@ -67,15 +67,15 @@ async function process_image(url, image_path) {
   );
 }
 
-async function create_text(width, length, text) {
+async function create_text(width, height, text) {
   try {
     const svg_img = `
-    <svg width="${width}" height="${length}">
+    <svg width="${width}" height="${height}">
     <style>
     .text {
       font-size: 64px;
-      color: #fff;
-      fill: #fff;
+      fill: #000;
+      font-weight: 700;
     }
     </style>
     <text x="50%" y="50%" text-anchor="middle" class="text">${text}</text>
@@ -90,17 +90,22 @@ async function create_text(width, length, text) {
 
 async function draw_image(followers_info) {
   try {
-    /*   const svg_banner_followers = await create_text(
-      100,
-      100,
-      draw_image_details.total_followers
-    );
-    draw_image_details.followers_info.push({
+    const hour = new Date().getHours();
+    const welcomeTypes = ["Morning", "Afternoon", "Evening"];
+    let welcomeText = "";
+
+    if (hour < 12) welcomeText = welcomeTypes[0];
+    else if (hour < 18) welcomeText = welcomeTypes[1];
+    else welcomeText = welcomeTypes[2];
+
+    const svg_banner_followers = await create_text(500, 100, welcomeText);
+
+    followers_info.push({
       input: svg_banner_followers,
-      top: 518,
-      left: 908,
+      top: 52,
+      left: 220,
     });
- */
+
     await sharp("twitter-banner.png")
       .composite(followers_info)
       .toFile("new-twitter-banner.png");
@@ -146,3 +151,4 @@ get_followers();
 setInterval(() => {
   get_followers();
 }, 60000);
+ 
