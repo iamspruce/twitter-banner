@@ -83,7 +83,7 @@ async function create_text(width, height, text) {
     const svg_img_buffer = Buffer.from(svg_img);
     return svg_img_buffer;
   } catch (error) {
-    console.log(error, 'error text');
+    console.log(error);
   }
 }
 
@@ -110,7 +110,7 @@ async function draw_image(image_data) {
 
      upload_banner(image_data);
   } catch (error) {
-    console.log(error, 'err draw');
+    console.log(error);
   }
 }
 
@@ -137,7 +137,7 @@ async function delete_files(files) {
     files.forEach((file) => {
       if (file.input.includes('.png')) {
         fs.unlinkSync(file.input);
-        console.log("Files removed");
+        console.log("File removed");
       }
     });
   } catch (err) {
