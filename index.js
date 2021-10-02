@@ -8,36 +8,35 @@ const fs = require("fs");
 const twitterClient = new TwitterClient({
   apiKey: process.env.API_KEY,
   apiSecret: process.env.API_SECRET,
-  accessToken: process.env.CONSUMER_KEY,
-  accessTokenSecret: process.env.CONSUMER_SECRET,
+  accessToken: process.env.ACCESS_KEY,
+  accessTokenSecret: process.env.ACCESS_SECRET,
 });
 
 async function get_followers() {
   const followers = await twitterClient.accountsAndUsers.followersList({
-    screen_name: process.env.TWITTER_HANDLE,
     count: 3,
   });
 
-  const followers_info = [];
+  const image_data = [];
 
   const get_followers_img = new Promise((resolve, reject) => {
-    followers.users.forEach((follower, index) => {
-      process_image(
+    followers.users.forEach(async(follower, index) => {
+      await process_image(
         follower.profile_image_url_https,
-        `${follower.screen_name}-${index}.png`
+        `${follower.screen_name}.png`
       );
       const follower_avatar = {
-        input: `${follower.screen_name}-${index}.png`,
+        input: `${follower.screen_name}.png`,
         top: 380,
         left: parseInt(`${1050 + 120 * index}`),
       };
-      followers_info.push(follower_avatar);
+      image_data.push(follower_avatar);
       resolve();
     });
   });
 
   get_followers_img.then(() => {
-    draw_image(followers_info);
+    draw_image(image_data);
   });
 }
 
@@ -84,11 +83,11 @@ async function create_text(width, height, text) {
     const svg_img_buffer = Buffer.from(svg_img);
     return svg_img_buffer;
   } catch (error) {
-    console.log(error);
+    console.log(error, 'error text');
   }
 }
 
-async function draw_image(followers_info) {
+async function draw_image(image_data) {
   try {
     const hour = new Date().getHours();
     const welcomeTypes = ["Morning", "Afternoon", "Evening"];
@@ -98,21 +97,20 @@ async function draw_image(followers_info) {
     else if (hour < 18) welcomeText = welcomeTypes[1];
     else welcomeText = welcomeTypes[2];
 
-    const svg_banner_followers = await create_text(500, 100, welcomeText);
+    const svg_greeting = await create_text(540, 100, welcomeText);
 
-    followers_info.push({
-      input: svg_banner_followers,
+    image_data.push({
+      input: svg_greeting,
       top: 52,
       left: 220,
     });
-
     await sharp("twitter-banner.png")
-      .composite(followers_info)
+      .composite(image_data)
       .toFile("new-twitter-banner.png");
 
-    upload_banner(followers_info);
+     upload_banner(image_data);
   } catch (error) {
-    console.log(error);
+    console.log(error, 'err draw');
   }
 }
 
@@ -137,9 +135,9 @@ async function upload_banner(files) {
 async function delete_files(files) {
   try {
     files.forEach((file) => {
-      if (!file.input.startsWith("<Buffer")) {
+      if (file.input.includes('.png')) {
         fs.unlinkSync(file.input);
-        console.log("Files removed", file.input);
+        console.log("Files removed");
       }
     });
   } catch (err) {
