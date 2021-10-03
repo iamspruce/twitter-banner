@@ -18,20 +18,24 @@ async function get_followers() {
   });
 
   const image_data = [];
+  let count = 0;
 
   const get_followers_img = new Promise((resolve, reject) => {
-    followers.users.forEach(async(follower, index) => {
-      await process_image(
+    followers.users.forEach((follower, index,arr) => {
+      process_image(
         follower.profile_image_url_https,
         `${follower.screen_name}.png`
-      );
-      const follower_avatar = {
-        input: `${follower.screen_name}.png`,
-        top: 380,
-        left: parseInt(`${1050 + 120 * index}`),
-      };
-      image_data.push(follower_avatar);
-      resolve();
+      ).then(() => {
+        const follower_avatar = {
+          input: `${follower.screen_name}.png`,
+          top: 380,
+          left: parseInt(`${1050 + 120 * index}`),
+        };
+        image_data.push(follower_avatar);
+        count++;
+        if (count === arr.length) resolve();
+      });
+
     });
   });
 
@@ -46,7 +50,7 @@ async function process_image(url, image_path) {
     responseType: "arraybuffer",
   }).then(
     (response) =>
-      new Promise((resolve, reject) => {
+      new Promise(async(resolve, reject) => {
         const rounded_corners = new Buffer.from(
           '<svg><rect x="0" y="0" width="100" height="100" rx="50" ry="50"/></svg>'
         );
@@ -104,6 +108,7 @@ async function draw_image(image_data) {
       top: 52,
       left: 220,
     });
+
     await sharp("twitter-banner.png")
       .composite(image_data)
       .toFile("new-twitter-banner.png");
@@ -116,7 +121,7 @@ async function draw_image(image_data) {
 
 async function upload_banner(files) {
   try {
-    const base64 = await fs.readFileSync("new-twitter-banner.png", {
+    const base64 = fs.readFileSync("new-twitter-banner.png", {
       encoding: "base64",
     });
     await twitterClient.accountsAndUsers
