@@ -6,7 +6,7 @@ const sharp = require("sharp");
 const fs = require("fs");
 
 // for byepassing heroku $PORT error
-const http = require("http");
+const { http, onRequest } = require("http");
 
 const twitterClient = new TwitterClient({
   apiKey: process.env.API_KEY,
