@@ -6,7 +6,7 @@ const sharp = require("sharp");
 const fs = require("fs");
 
 // for byepassing heroku $PORT error
-const { http, onRequest } = require("http");
+const http = require("http");
 
 const twitterClient = new TwitterClient({
   apiKey: process.env.API_KEY,
@@ -158,4 +158,8 @@ setInterval(() => {
 }, 60000);
 
 // bypass heroku port error
-http.createServer(onRequest).listen(process.env.PORT || 6000);
+http
+  .createServer(function (req, res) {
+    res.send("it is running\n");
+  })
+  .listen(process.env.PORT || 5000);
