@@ -5,6 +5,9 @@ const axios = require("axios");
 const sharp = require("sharp");
 const fs = require("fs");
 
+// for byepassing heroku $PORT error
+const http = require("http");
+
 const twitterClient = new TwitterClient({
   apiKey: process.env.API_KEY,
   apiSecret: process.env.API_SECRET,
@@ -21,7 +24,7 @@ async function get_followers() {
   let count = 0;
 
   const get_followers_img = new Promise((resolve, reject) => {
-    followers.users.forEach((follower, index,arr) => {
+    followers.users.forEach((follower, index, arr) => {
       process_image(
         follower.profile_image_url_https,
         `${follower.screen_name}.png`
@@ -35,7 +38,6 @@ async function get_followers() {
         count++;
         if (count === arr.length) resolve();
       });
-
     });
   });
 
@@ -50,7 +52,7 @@ async function process_image(url, image_path) {
     responseType: "arraybuffer",
   }).then(
     (response) =>
-      new Promise(async(resolve, reject) => {
+      new Promise(async (resolve, reject) => {
         const rounded_corners = new Buffer.from(
           '<svg><rect x="0" y="0" width="100" height="100" rx="50" ry="50"/></svg>'
         );
@@ -113,7 +115,7 @@ async function draw_image(image_data) {
       .composite(image_data)
       .toFile("new-twitter-banner.png");
 
-     upload_banner(image_data);
+    upload_banner(image_data);
   } catch (error) {
     console.log(error);
   }
@@ -140,7 +142,7 @@ async function upload_banner(files) {
 async function delete_files(files) {
   try {
     files.forEach((file) => {
-      if (file.input.includes('.png')) {
+      if (file.input.includes(".png")) {
         fs.unlinkSync(file.input);
         console.log("File removed");
       }
@@ -154,4 +156,6 @@ get_followers();
 setInterval(() => {
   get_followers();
 }, 60000);
- 
+
+// bypass heroku port error
+http.createServer(onRequest).listen(process.env.PORT || 6000);
