@@ -5,9 +5,6 @@ const axios = require("axios");
 const sharp = require("sharp");
 const fs = require("fs");
 
-// for byepassing heroku $PORT error
-const http = require("http");
-
 const twitterClient = new TwitterClient({
   apiKey: process.env.API_KEY,
   apiSecret: process.env.API_SECRET,
@@ -156,10 +153,3 @@ get_followers();
 setInterval(() => {
   get_followers();
 }, 60000);
-
-// bypass heroku port error
-http
-  .createServer(function (req, res) {
-    res.send("it is running\n");
-  })
-  .listen(process.env.PORT || 5000);
