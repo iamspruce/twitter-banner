@@ -71,44 +71,9 @@ async function process_image(url, image_path) {
   );
 }
 
-async function create_text(width, height, text) {
-  try {
-    const svg_img = `
-    <svg width="${width}" height="${height}">
-    <style>
-    .text {
-      font-size: 64px;
-      fill: #000;
-      font-weight: 700;
-    }
-    </style>
-    <text x="50%" y="50%" text-anchor="middle" class="text">${text}</text>
-    </svg>
-    `;
-    const svg_img_buffer = Buffer.from(svg_img);
-    return svg_img_buffer;
-  } catch (error) {
-    console.log(error);
-  }
-}
 
 async function draw_image(image_data) {
   try {
-    const hour = new Date().getHours();
-    const welcomeTypes = ["Morning", "Afternoon", "Evening"];
-    let welcomeText = "";
-
-    if (hour < 12) welcomeText = welcomeTypes[0];
-    else if (hour < 18) welcomeText = welcomeTypes[1];
-    else welcomeText = welcomeTypes[2];
-
-    const svg_greeting = await create_text(540, 100, welcomeText);
-
-    image_data.push({
-      input: svg_greeting,
-      top: 52,
-      left: 220,
-    });
 
     await sharp("twitter-banner.png")
       .composite(image_data)
@@ -152,12 +117,8 @@ async function delete_files(files) {
 }
 
 get_followers();
+
 setInterval(() => {
   get_followers();
 }, 60000);
 
-http
-  .createServer(function (req, res) {
-    res.send("it is running\n");
-  })
-  .listen(process.env.PORT || 5000);
